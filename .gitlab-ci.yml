@@ -1,0 +1,25 @@
+stages:
+  - build
+  - test
+  - security_scan
+
+build_image:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - docker build -t fastapi-app .
+
+load_test:
+  stage: test
+  image: grafana/k6
+  script:
+    - k6 run tests/k6-load-test.js
+
+security_scan:
+  stage: security_scan
+  image: aquasec/trivy:latest
+  script:
+    - trivy fs .
+  allow_failure: true
